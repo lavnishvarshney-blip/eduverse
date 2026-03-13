@@ -674,7 +674,7 @@ const app = {
             const missionHtml = await this.callGeminiAPI(prompt, true);
             const container = document.getElementById('mission-output');
             document.getElementById('daily-mission-card').style.display = 'none';
-            container.innerHTML = `<div class="glass-card p-6 border-glow">${missionHtml} <button class="btn btn-primary mt-4 w-full" onclick="alert('Mission complete! +50 Tokens'); app.switchDashboardTab('home')">Submit Answers</button></div>`;
+            container.innerHTML = `<div class="glass-card p-6 border-glow">${missionHtml} <button class="btn btn-primary mt-4 w-full" onclick="app.awardTokens(50); alert('Mission complete! +50 Tokens saved to your account!'); app.switchDashboardTab('home')">Submit Answers</button></div>`;
             container.classList.remove('hidden');
         } catch (e) {
             alert('Mission generation failed.');
@@ -683,7 +683,19 @@ const app = {
         }
     },
 
-    contributeToCampusBattle() {
+    async awardTokens(amount) {
+        if (!this.state.currentUser) return;
+        try {
+            const { data } = await supabase.from('users').select('tokens').eq('id', this.state.currentUser.id).single();
+            const newTokens = (data && data.tokens ? data.tokens : 0) + amount;
+            await supabase.from('users').update({ tokens: newTokens }).eq('id', this.state.currentUser.id);
+            console.log(`Awarded ${amount} tokens. Total: ${newTokens}`);
+        } catch (e) {
+            console.log("Error saving tokens:", e);
+        }
+    },
+
+    async contributeToCampusBattle() {
         // Quick interaction simulation
         const ptsEl = document.getElementById('stanford-pts');
         const currentPts = parseInt(ptsEl.innerText.replace(',', ''));
@@ -696,6 +708,16 @@ const app = {
             ptsEl.style.transform = 'scale(1)';
             ptsEl.style.color = 'var(--primary)';
         }, 300);
+
+        // Sync with Supabase Cloud
+        try {
+            const { data } = await supabase.from('campus_battles').select('points').eq('school_id', 'Stanford').single();
+            const newPts = (data && data.points ? data.points : currentPts) + 10;
+            await supabase.from('campus_battles').upsert({ school_id: 'Stanford', points: newPts });
+            console.log("Updated Global Campus Rank!");
+        } catch (e) {
+            console.log("Campus Battles error:", e);
+        }
     },
 
     async sendDoubtChart() {
