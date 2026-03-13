@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eduverse - The Future of Learning</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Phosphor Icons (for premium iconography) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dark-theme">
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-icon">🚀</span>
+            <span class="logo-text">Eduverse</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active">Home</a>
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#pricing" class="nav-link">Pricing</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-ghost" id="loginBtn">Log in</button>
+            <button class="btn btn-primary" id="signupBtn">Sign up free</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="app-content">
+        <!-- Landing Page View -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="badge">✨ Free AI-Powered Education</div>
+                <h1 class="hero-title">Master any subject with your <span class="gradient-text">AI Learning Twin</span></h1>
+                <p class="hero-subtitle">Replace tutors, study guides, and courses. Eduverse is a completely free, infinitely patient AI tutor that adapts to your exact learning style.</p>
+                <div class="hero-cta">
+                    <button class="btn btn-primary btn-large" onclick="app.navigateTo('dashboard')">Enter App Demo</button>
+                    <button class="btn btn-secondary btn-large">View Features</button>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <!-- Abstract 3D/Glassmorphism element representation -->
+                <div class="glass-card tutor-card floating">
+                    <div class="tutor-header">
+                        <div class="tutor-avatar">🤖</div>
+                        <div class="tutor-info">
+                            <h4>AI Tutor</h4>
+                            <p>Online</p>
+                        </div>
+                    </div>
+                    <div class="tutor-chat">
+                        <div class="chat-bubble student">Yeah, trigonometry feels tough, right?</div>
+                        <div class="chat-bubble ai">
+                            <p>Totally normal, bhai! Trinogometry is basically just measuring triangles. 📐</p>
+                            <p>Think of it like figuring out how tall a tree is just by standing back and looking at its shadow.</p>
+                            <p>If you know your distance and the angle you're looking up, which side are you trying to find?</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Background decorative elements -->
+                <div class="glow-orb orb-1"></div>
+                <div class="glow-orb orb-2"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Tutor Chat Widget (Overlay) -->
+    <div id="ai-chat-widget" class="chat-widget hidden">
+        <div class="chat-header">
+            <div class="tutor-info">
+                <span class="tutor-avatar">🧠</span>
+                <div>
+                    <h4>Eduverse AI</h4>
+                    <span class="status">Ready to help</span>
+                </div>
+            </div>
+            <button class="btn-icon" onclick="app.toggleChat()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-bubble ai mt-4">
+                Hey! What are we working on today? 😎
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Ask anything... (e.g. explain quantum physics)">
+            <button class="btn-icon primary" onclick="app.sendMessage()"><i class="ph-fill ph-paper-plane-right"></i></button>
+        </div>
+    </div>
+
+    <!-- Floating Chat Toggle -->
+    <button class="chat-toggle-btn" onclick="app.toggleChat()">
+        <i class="ph-fill ph-chat-teardrop-text"></i>
+    </button>
+
+    <!-- Modals -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3 id="auth-title">Welcome to Eduverse</h3>
+                <button class="btn-icon" onclick="app.closeModal('auth-modal')"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-tabs">
+                    <button class="tab-btn active" onclick="app.switchAuthTab('login')">Log In</button>
+                    <button class="tab-btn" onclick="app.switchAuthTab('signup')">Sign Up</button>
+                </div>
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form" onsubmit="event.preventDefault(); app.login();">
+                    <div class="form-group">
+                        <label>Email Directory</label>
+                        <input type="email" placeholder="student@school.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large w-full mt-4">Log In</button>
+                </form>
+                <!-- Signup Form -->
+                <form id="signup-form" class="auth-form hidden" onsubmit="event.preventDefault(); app.signup();">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email (School ID preferred)</label>
+                        <input type="email" placeholder="student@school.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label>School ID / Invite Code (Optional)</label>
+                        <input type="text" placeholder="EDU-123">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large w-full mt-4">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>Eduverse Core Settings</h3>
+                <button class="btn-icon" onclick="app.closeModal('settings-modal')"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-muted mb-4">Connect your own database and AI engine here.</p>
+                <div class="form-group">
+                    <label>Google Gemini API Key (For AI Tutor)</label>
+                    <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
+                    <p class="text-xs text-muted mt-1">Get one free at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary">Google AI Studio</a></p>
+                </div>
+                <!-- Future Supabase Keys go here -->
+                <button id="saveApiKeyBtn" class="btn btn-primary w-full mt-4">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Logic -->
+    <script src="app.js"></script>
+    
+    <!-- PWA Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('PWA Service Worker registered!', reg.scope))
+            .catch(err => console.log('PWA Service Worker failed:', err));
+        });
+      }
+    </script>
+</body>
+</html>
