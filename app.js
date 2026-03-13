@@ -3,6 +3,10 @@
  * Vanilla JS implementation
  */
 
+const supabaseUrl = 'https://kwnmeiphzrbdvoougtfp.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3bm1laXBoenJiZHZvb3VndGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MTM2MjksImV4cCI6MjA4ODk4OTYyOX0.kckiexlTWsrETDowXAAwjb0APC9VG9cGfuk0qcPbMNk';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
 const app = {
     state: {
         isChatOpen: false,
@@ -12,10 +16,17 @@ const app = {
         apiKey: localStorage.getItem('eduverse_gemini_key') || 'AIzaSyDoRp1Nc-OlGZRgR8HCru51RcqKPaR5wh0'
     },
 
-    init() {
+    async init() {
         console.log("🚀 Eduverse Initialized");
         this.bindEvents();
         
+        // Check for existing Supabase session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            this.state.currentUser = session.user;
+            this.navigateTo('dashboard');
+        }
+
         // If API key is missing on load, prompt quietly in log
         if (!this.state.apiKey) console.warn("Gemini API Key missing. AI will use mock mode.");
     },
@@ -87,16 +98,47 @@ const app = {
         }
     },
 
-    login() {
-        // Simulate login success
-        this.closeModal('auth-modal');
-        this.navigateTo('dashboard');
+    async login() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            
+            this.state.currentUser = data.user;
+            this.closeModal('auth-modal');
+            this.navigateTo('dashboard');
+        } catch (error) {
+            alert(error.message);
+        }
     },
 
-    signup() {
-        // Simulate signup success
-        this.closeModal('auth-modal');
-        this.navigateTo('dashboard');
+    async signup() {
+        const name = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        
+        try {
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) throw error;
+            
+            // Insert profile into users table
+            if (data.user) {
+                await supabase.from('users').insert([{ 
+                    id: data.user.id, 
+                    name: name, 
+                    email: email 
+                }]);
+            }
+            
+            this.state.currentUser = data.user;
+            this.closeModal('auth-modal');
+            this.navigateTo('dashboard');
+            alert("Welcome to Eduverse! Your account is created.");
+        } catch (error) {
+            alert(error.message);
+        }
     },
 
     async sendMessage() {
