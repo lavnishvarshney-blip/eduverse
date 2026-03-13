@@ -222,7 +222,11 @@ const app = {
             })
         });
 
-        if (!response.ok) throw new Error("API failed");
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error("Gemini Details:", errText);
+            throw new Error(`API failed (${response.status}) - maybe quota or missing key?`);
+        }
         
         const data = await response.json();
         return data.candidates[0].content.parts[0].text;
@@ -250,7 +254,8 @@ const app = {
                     <div class="sidebar-item ${this.state.activeDashboardTab === 'progress' ? 'active' : ''}" onclick="app.switchDashboardTab('progress')"><i class="ph ph-chart-line-up"></i> Progress Analytics</div>
                     <div class="sidebar-item ${this.state.activeDashboardTab === 'campus-battle' ? 'active' : ''}" onclick="app.switchDashboardTab('campus-battle')"><i class="ph ph-sword"></i> Campus Battle</div>
                     <div class="sidebar-item ${this.state.activeDashboardTab === 'tools' ? 'active' : ''}" onclick="app.switchDashboardTab('tools')"><i class="ph ph-wrench"></i> More Tools</div>
-                    <div class="sidebar-item mt-4"><i class="ph ph-student"></i> Profile</div>
+                    <div class="sidebar-item mt-4" onclick="app.openModal('settings-modal')"><i class="ph ph-gear"></i> Settings</div>
+                    <div class="sidebar-item"><i class="ph ph-student"></i> Profile</div>
                 </aside>
                 
                 <main class="main-view" id="dashboard-main-view">
@@ -629,7 +634,8 @@ const app = {
             container.innerHTML = rawHtml;
             container.classList.remove('hidden');
         } catch (e) {
-            alert('Failed to generate test. Check API Key.');
+            console.error(e);
+            alert('Failed to generate test: ' + e.message);
         } finally {
             outputBtn.innerHTML = 'Generate Test ✨';
             outputBtn.disabled = false;
@@ -677,7 +683,8 @@ const app = {
             container.innerHTML = `<div class="glass-card p-6 border-glow">${missionHtml} <button class="btn btn-primary mt-4 w-full" onclick="app.awardTokens(50); alert('Mission complete! +50 Tokens saved to your account!'); app.switchDashboardTab('home')">Submit Answers</button></div>`;
             container.classList.remove('hidden');
         } catch (e) {
-            alert('Mission generation failed.');
+            console.error(e);
+            alert('Mission generation failed: ' + e.message);
             outputBtn.innerHTML = 'Start Mission';
             outputBtn.disabled = false;
         }
