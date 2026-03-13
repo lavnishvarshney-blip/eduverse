@@ -5,7 +5,17 @@
 
 const supabaseUrl = 'https://kwnmeiphzrbdvoougtfp.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3bm1laXBoenJiZHZvb3VndGZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MTM2MjksImV4cCI6MjA4ODk4OTYyOX0.kckiexlTWsrETDowXAAwjb0APC9VG9cGfuk0qcPbMNk';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+let supabase = null;
+try {
+    if (window.supabase && window.supabase.createClient) {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase connected!');
+    } else {
+        console.warn('⚠️ Supabase library not loaded. Running in offline mode.');
+    }
+} catch (e) {
+    console.warn('⚠️ Supabase init failed:', e.message);
+}
 
 const app = {
     state: {
@@ -21,10 +31,16 @@ const app = {
         this.bindEvents();
         
         // Check for existing Supabase session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            this.state.currentUser = session.user;
-            this.navigateTo('dashboard');
+        if (supabase) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    this.state.currentUser = session.user;
+                    this.navigateTo('dashboard');
+                }
+            } catch (e) {
+                console.warn('Session check failed:', e.message);
+            }
         }
 
         // If API key is missing on load, prompt quietly in log
@@ -99,8 +115,15 @@ const app = {
     },
 
     async login() {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
+        const email = document.getElementById('login-email')?.value;
+        const password = document.getElementById('login-password')?.value;
+        
+        if (!supabase) {
+            // Offline mode - just navigate
+            this.closeModal('auth-modal');
+            this.navigateTo('dashboard');
+            return;
+        }
         
         try {
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -115,9 +138,16 @@ const app = {
     },
 
     async signup() {
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
+        const name = document.getElementById('signup-name')?.value;
+        const email = document.getElementById('signup-email')?.value;
+        const password = document.getElementById('signup-password')?.value;
+        
+        if (!supabase) {
+            // Offline mode - just navigate
+            this.closeModal('auth-modal');
+            this.navigateTo('dashboard');
+            return;
+        }
         
         try {
             const { data, error } = await supabase.auth.signUp({ email, password });
@@ -691,7 +721,7 @@ const app = {
     },
 
     async awardTokens(amount) {
-        if (!this.state.currentUser) return;
+        if (!this.state.currentUser || !supabase) return;
         try {
             const { data } = await supabase.from('users').select('tokens').eq('id', this.state.currentUser.id).single();
             const newTokens = (data && data.tokens ? data.tokens : 0) + amount;
